@@ -6,4 +6,4 @@ set(PRIVATE_SOURCES
 )
 
 add_library(${TARGET_NAME} STATIC ${PRIVATE_SOURCES})
-target_link_libraries(${TARGET_NAME} PUBLIC spdlog::spdlog fmt::fmt)
+target_link_libraries(${TARGET_NAME} PUBLIC spdlog::spdlog_header_only fmt::fmt)

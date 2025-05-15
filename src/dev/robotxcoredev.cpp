@@ -1,19 +1,18 @@
 
 #include "dev/robotxcoredev.h"
 
-#include <string>
 #include <cmath>
+#include <string>
 
-#include "data_types.h"
-#include "utility.h"
 #include "log/logging.h"
+#include "rokae/data_types.h"
+#include "rokae/utility.h"
 
 using namespace rokae;
 
-RobotXCoreDev::RobotXCoreDev(const std::string &remote_ip, const std::string& local_ip)
+RobotXCoreDev::RobotXCoreDev(const std::string& remote_ip, const std::string& local_ip)
     : remote_ip_(remote_ip), local_ip_(local_ip)
 {
-    
 }
 
 RobotXCoreDev::~RobotXCoreDev()
@@ -33,8 +32,7 @@ bool RobotXCoreDev::connect()
         if (robot_dev_ == nullptr) {
             LOG_ERROR("Failed to create robot device {}", remote_ip_);
         }
-    }
-    catch (const std::exception &e) {
+    } catch (const std::exception& e) {
         LOG_ERROR("Exception occurred while connecting to robot: {}", e.what());
         return false;
     }
@@ -64,13 +62,12 @@ void RobotXCoreDev::setRobotMode()
 
     try {
         error_code ec;
-        robot_dev_->setOperateMode(rokae::OperateMode::automatic,ec);
+        robot_dev_->setOperateMode(rokae::OperateMode::automatic, ec);
         robot_dev_->setRtNetworkTolerance(20, ec);
 
         robot_dev_->setMotionControlMode(MotionControlMode::RtCommand, ec);
         robot_dev_->setPowerState(true, ec);
-    }
-    catch(const std::exception& e) {
+    } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
     }
 }
@@ -91,10 +88,7 @@ int RobotXCoreDev::moveLine(float delta, int index)
     return 0;
 }
 
-int RobotXCoreDev::moveForward(float delta)
-{
-    return moveLine(delta, 0);
-}
+int RobotXCoreDev::moveForward(float delta) { return moveLine(delta, 0); }
 
 int RobotXCoreDev::moveJoint(float delta, int index)
 {

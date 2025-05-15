@@ -24,10 +24,10 @@ add_executable(
 
 target_link_libraries(
   ${TARGET_NAME}
+  PRIVATE
     log
     dev
     app
-    spdlog::spdlog
     nlohmann_json::nlohmann_json
     Qt${QT_VERSION_MAJOR}::Core
     Threads::Threads)

@@ -1,0 +1,8 @@
+depends/xCoreSDK/lib/Windows/Debug/64bit/xCoreSDK.lib filter=lfs diff=lfs merge=lfs -text
+depends/xCoreSDK/lib/Windows/Debug/64bit/xCoreSDK.pdb filter=lfs diff=lfs merge=lfs -text
+depends/xCoreSDK/lib/Windows/Debug/64bit/xCoreSDK_static.lib filter=lfs diff=lfs merge=lfs -text
+depends/xCoreSDK/lib/Windows/Debug/32bit/xCoreSDK_static.lib filter=lfs diff=lfs merge=lfs -text
+depends/xCoreSDK/lib/Windows/Debug/32bit/xCoreSDK.pdb filter=lfs diff=lfs merge=lfs -text
+depends/xCoreSDK/lib/Windows/Release/32bit/xCoreSDK_static.lib filter=lfs diff=lfs merge=lfs -text
+depends/xCoreSDK/lib/Windows/Release/64bit/xCoreSDK.lib filter=lfs diff=lfs merge=lfs -text
+depends/xCoreSDK/lib/Windows/Release/64bit/xCoreSDK_static.lib filter=lfs diff=lfs merge=lfs -text

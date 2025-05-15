@@ -1,4 +1,2 @@
-
-add_subdirectory(Eigen)
-add_subdirectory(CoreSDK)
+add_subdirectory(xCoreSDK)
 

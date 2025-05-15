@@ -1,13 +1,14 @@
 #ifndef DEV_ROBOTXCOREDEV_H_
 #define DEV_ROBOTXCOREDEV_H_
 
-#include "robot.h"
 #include "dev/robotinterface.h"
+#include "rokae/robot.h"
 
-class RobotXCoreDev : public RobotInterface 
+
+class RobotXCoreDev : public RobotInterface
 {
 public:
-    RobotXCoreDev(const std::string &remote_ip, const std::string& local_ip = "");
+    RobotXCoreDev(const std::string &remote_ip, const std::string &local_ip = "");
     ~RobotXCoreDev();
 
     bool connect() override;
@@ -22,12 +23,11 @@ private:
     int moveLine(float delta, int index);
 
 private:
-    rokae::xMateRobot *robot_dev_ = nullptr; // Robot device pointer
+    rokae::xMateRobot *robot_dev_ = nullptr;  // Robot device pointer
 
     std::string remote_ip_;
     std::string local_ip_;
-    double speed_ = 0.5; // Default speed
-
+    double speed_ = 0.5;  // Default speed
 };
 
-#endif // DEV_ROBOTXCOREDEV_H_
+#endif  // DEV_ROBOTXCOREDEV_H_

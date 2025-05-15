@@ -10,4 +10,4 @@ set(PRIVATE_SOURCES
 )
 
 add_library(${TARGET_NAME} STATIC ${PRIVATE_SOURCES})
-target_link_libraries(${TARGET_NAME} PRIVATE log CoreSDK eigen)
+target_link_libraries(${TARGET_NAME} PRIVATE log Rokae::Rokae eigen)
