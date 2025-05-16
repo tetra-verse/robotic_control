@@ -12,22 +12,23 @@ public:
 
     bool connect();
     bool disconnect();
+    bool isConnected() const { return fd_ >= 0; }
     
     // space mm
     int moveForward(float delta);
-    void moveBackward(float delta);
-    void moveLeftward(float delta);
-    void moveRightward(float delta);
-    void moveUpward(float delta);
-    void moveDownward(float delta);
+    int moveBackward(float delta);
+    int moveLeftward(float delta);
+    int moveRightward(float delta);
+    int moveUpward(float delta);
+    int moveDownward(float delta);
 
     // degrees
-    void moveUp(float delta);
-    void moveDown(float delta);
-    void moveLeft(float delta);
-    void moveRight(float delta);
-    void moveRollClockwise(float delta);
-    void moveRollCounterClockwise(float delta);
+    int moveUp(float delta);
+    int moveDown(float delta);
+    int moveLeft(float delta);
+    int moveRight(float delta);
+    int moveRollClockwise(float delta);
+    int moveRollCounterClockwise(float delta);
 
     // degrees
     int moveJoint(float delta, int index);

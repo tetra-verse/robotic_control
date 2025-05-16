@@ -25,6 +25,18 @@ public:
     int moveJoint(int fd, float delta, int index);
 
     int moveForward(int fd, float delta);
+    int moveBackward(int fd, float delta);
+    int moveLeftward(int fd, float delta);
+    int moveRightward(int fd, float delta);
+    int moveUpward(int fd, float delta);
+    int moveDownward(int fd, float delta);
+
+    int moveUp(int fd, float delta);
+    int moveDown(int fd, float delta);
+    int moveLeft(int fd, float delta);
+    int moveRight(int fd, float delta);
+    int moveRollClockwise(int fd, float delta);
+    int moveRollCounterClockwise(int fd, float delta);
 
 private:
     RobotController() = default;
