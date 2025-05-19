@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "dev/robotinterface.h"
 
 class RobotStudio
 {
@@ -32,6 +33,8 @@ public:
 
     // degrees
     int moveJoint(float delta, int index);
+
+    void setReadCallback(ReadCallback callback);
 
 private:
     std::string hostname_ = ""; // Hostname

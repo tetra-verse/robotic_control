@@ -231,3 +231,16 @@ int RobotStudio::moveRollCounterClockwise(float delta)
     LOG_ERROR("Not connected to robot studio");
     return -1;
 }
+
+void RobotStudio::setReadCallback(ReadCallback callback)
+{
+    if (isConnected())
+    {
+        RobotController &controller = RobotController::instance();
+        controller.setReadCallback(fd_, callback);
+        LOG_INFO("Set read callback for robot studio with fd: {}", fd_);
+        return;
+    }
+
+    LOG_ERROR("Not connected to robot studio");
+}

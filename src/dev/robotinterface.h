@@ -1,6 +1,18 @@
 #ifndef DEV_ROBOTINTERFACE_H_
 #define DEV_ROBOTINTERFACE_H_
 
+#include <array>
+#include <functional>
+
+struct MotionData
+{
+    std::array<float, 6> angles = {0};
+    std::array<float, 6> xyzoat = {0};
+    std::array<float, 6> xyzptr = {0};
+};
+
+using ReadCallback = std::function<void(const MotionData &)>;
+
 class RobotInterface
 {
 public:
@@ -23,8 +35,9 @@ public:
     virtual int moveRollClockwise(float delta) = 0;
     virtual int moveRollCounterClockwise(float delta) = 0;
 
-
     virtual int moveJoint(float delta, int index) = 0;
+
+    virtual void setReadCallback(ReadCallback callback) = 0;
 };
 
 

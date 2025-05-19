@@ -38,6 +38,8 @@ public:
     int moveRollClockwise(int fd, float delta);
     int moveRollCounterClockwise(int fd, float delta);
 
+    void setReadCallback(int fd, ReadCallback callback);
+
 private:
     RobotController() = default;
     ~RobotController();

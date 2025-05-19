@@ -311,3 +311,15 @@ int RobotController::moveRollCounterClockwise(int fd, float delta)
     return ret;
 }
 
+void RobotController::setReadCallback(int fd, ReadCallback callback)
+{
+    std::shared_lock<std::shared_mutex> lock(devs_mutex_);
+    auto robot_dev = findRobotDev(fd);
+    if (robot_dev == nullptr) {
+        LOG_ERROR("Failed to set read callback: invalid file descriptor {}", fd);
+        return;
+    }
+
+    robot_dev->setReadCallback(callback);
+}
+

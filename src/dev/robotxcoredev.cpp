@@ -33,14 +33,16 @@ bool RobotXCoreDev::connect()
         robot_dev_ = new rokae::xMateRobot(remote_ip_, local_ip_);
         if (robot_dev_ == nullptr) {
             LOG_ERROR("Failed to create robot device {}", remote_ip_);
+            return false;
         }
+
+        setRobotMode();
+        setRobotReceiveState();
     }
     catch (const std::exception &e) {
         LOG_ERROR("Exception occurred while connecting to robot: {}", e.what());
         return false;
     }
-
-    setRobotMode();
 
     // Create the robot device
     LOG_INFO("Creating robot device with remote IP: {}, local IP: {}", remote_ip_, local_ip_);
@@ -74,6 +76,24 @@ void RobotXCoreDev::setRobotMode()
     catch(const std::exception& e) {
         std::cerr << e.what() << '\n';
     }
+}
+
+void RobotXCoreDev::setRobotReceiveState()
+{
+    LOG_INFO("Setting robot receive state");
+
+    error_code ec;
+    std::shared_ptr<RtMotionControlCobot<6>> rtCon;
+    rtCon = robot_dev_->getRtMotionController().lock();
+    robot_dev_->startReceiveRobotState(std::chrono::milliseconds(1), {RtSupportedFields::jointPos_m});
+
+    std::function<JointPosition(void)> callback = [&, rtCon]() {
+        JointPosition cmd(7);
+        return cmd;
+    };
+
+    rtCon->setControlLoop(callback);
+    rtCon->startLoop(true);
 }
 
 int RobotXCoreDev::moveDegree(float delta, int index)
@@ -213,4 +233,9 @@ int RobotXCoreDev::moveRollClockwise(float delta)
 int RobotXCoreDev::moveRollCounterClockwise(float delta)
 {
     return moveDegree(-delta, 2);
+}
+
+void RobotXCoreDev::setReadCallback(ReadCallback callback)
+{
+    read_callback_ = callback;
 }

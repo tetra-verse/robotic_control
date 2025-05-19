@@ -29,13 +29,17 @@ public:
 
     int moveJoint(float delta, int index) override;
 
+    void setReadCallback(ReadCallback callback) override;
+
 private:
     void setRobotMode();
+    void setRobotReceiveState();
     int moveLine(float delta, int index);
     int moveDegree(float delta, int index);
 
 private:
     rokae::xMateRobot *robot_dev_ = nullptr; // Robot device pointer
+    ReadCallback read_callback_ = nullptr; // Callback function for reading data
 
     std::string remote_ip_;
     std::string local_ip_;
