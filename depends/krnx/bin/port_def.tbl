@@ -1,0 +1,20 @@
+; Port Def Tbl File
+;   create : 2003/10/24 H.Iwasaki
+;-----------------------------------; tbl no
+aux=23:udp=[8101,8102]:eth=[8103,8104]:telnet=8200:kosmos=8000:plc=9000              ; 0
+aux=9100:udp=[9101,9102]:eth=[9103,9104]:telnet=9105:kosmos=9106:plc=9107:sync=9108  ; 1
+aux=9200:udp=[9201,9202]:eth=[9203,9204]:telnet=9205:kosmos=9206:plc=9207:sync=9208  ; 2
+aux=9300:udp=[9301,9302]:eth=[9303,9304]:telnet=9305:kosmos=9306:plc=9307:sync=9308  ; 3
+aux=9400:udp=[9401,9402]:eth=[9403,9404]:telnet=9405:kosmos=9406:plc=9407:sync=9408  ; 4
+aux=9500:udp=[9501,9502]:eth=[9503,9504]:telnet=9505:kosmos=9506:plc=9507:sync=9508  ; 5
+aux=9600:udp=[9601,9602]:eth=[9603,9604]:telnet=9605:kosmos=9606:plc=9607:sync=9608  ; 6
+aux=9700:udp=[9701,9702]:eth=[9703,9704]:telnet=9705:kosmos=9706:plc=9707:sync=9708  ; 7
+aux=9800:udp=[9801,9802]:eth=[9803,9804]:telnet=9805:kosmos=9806:plc=9807:sync=9808  ; 8
+aux=9100:udp=[9111,9112]:eth=[9113,9114]:telnet=9115:kosmos=9116:plc=9117:sync=9118  ; 9
+aux=9200:udp=[9211,9212]:eth=[9213,9214]:telnet=9215:kosmos=9216:plc=9217:sync=9218  ; 10
+aux=9300:udp=[9311,9312]:eth=[9313,9314]:telnet=9315:kosmos=9316:plc=9317:sync=9318  ; 11
+aux=9400:udp=[9411,9412]:eth=[9413,9414]:telnet=9415:kosmos=9416:plc=9417:sync=9418  ; 12
+aux=9500:udp=[9511,9512]:eth=[9513,9514]:telnet=9515:kosmos=9516:plc=9517:sync=9518  ; 13
+aux=9600:udp=[9611,9612]:eth=[9613,9614]:telnet=9615:kosmos=9616:plc=9617:sync=9618  ; 14
+aux=9700:udp=[9711,9712]:eth=[9713,9714]:telnet=9715:kosmos=9716:plc=9717:sync=9718  ; 15
+aux=9800:udp=[9811,9812]:eth=[9813,9814]:telnet=9815:kosmos=9816:plc=9817:sync=9818  ; 16
