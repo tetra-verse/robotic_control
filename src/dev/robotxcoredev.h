@@ -36,6 +36,8 @@ private:
     void setRobotReceiveState();
     int moveLine(float delta, int index);
     int moveDegree(float delta, int index);
+    
+    bool readRobotData(MotionData &data);
 
 private:
     rokae::xMateRobot *robot_dev_ = nullptr; // Robot device pointer

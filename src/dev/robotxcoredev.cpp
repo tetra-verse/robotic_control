@@ -85,15 +85,34 @@ void RobotXCoreDev::setRobotReceiveState()
     error_code ec;
     std::shared_ptr<RtMotionControlCobot<6>> rtCon;
     rtCon = robot_dev_->getRtMotionController().lock();
-    robot_dev_->startReceiveRobotState(std::chrono::milliseconds(1), {RtSupportedFields::jointPos_m});
+    robot_dev_->startReceiveRobotState(std::chrono::milliseconds(20), {RtSupportedFields::tcpPoseAbc_m, RtSupportedFields::tau_m, RtSupportedFields::jointPos_m});
 
     std::function<JointPosition(void)> callback = [&, rtCon]() {
         JointPosition cmd(7);
+
+        MotionData data;
+        if (read_callback_ && readRobotData(data)) {
+            read_callback_(data);
+        }
         return cmd;
     };
 
     rtCon->setControlLoop(callback);
     rtCon->startLoop(true);
+}
+
+bool RobotXCoreDev::readRobotData(MotionData &data)
+{
+    error_code ec;
+    auto tcp_xyzabc = robot_dev_->posture(CoordinateType::endInRef, ec);
+    auto flan_cart = robot_dev_->cartPosture(CoordinateType::flangeInBase, ec);
+    robot_dev_->baseFrame(ec); // 基坐标系
+    // printf( "末端相对外部参考坐标系位姿", tcp_xyzabc);
+    // printf("法兰相对基坐标系 -", flan_cart);
+
+    std::array<double,6> jntPos{};
+    robot_dev_->getStateData(RtSupportedFields::jointPos_m, jntPos);
+    return true;
 }
 
 int RobotXCoreDev::moveDegree(float delta, int index)
