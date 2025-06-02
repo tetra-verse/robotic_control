@@ -5,10 +5,17 @@
 
 #include "dev/robotinterface.h"
 
+enum class RobotType
+{
+    ROBOT_XCORE,
+    ROBOT_KRNX
+};
+
 class RobotStudio
 {
 public:
     RobotStudio(std::string hostname, std::string local_ip = "");
+    RobotStudio(int cont_no, std::string hostname, int robot_no = 0);
     ~RobotStudio();
 
     bool connect();
@@ -40,6 +47,11 @@ private:
     std::string hostname_ = ""; // Hostname
     std::string local_ip_ = ""; // Local IP address
     int fd_ = -1; // File descriptor for the connection
+
+    // Controller and Robot numbers`
+    int cont_no_ = -1; // Controller number
+    int robot_no_ = -1; // Robot number
+    RobotType dev_type_ = RobotType::ROBOT_XCORE; // Robot type
 };
 
 

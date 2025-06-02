@@ -4,7 +4,13 @@
 #include "dev/robotcontroller.h"
 
 RobotStudio::RobotStudio(std::string hostname, std::string local_ip) 
-    : hostname_(hostname), local_ip_(local_ip)
+    : hostname_(hostname), local_ip_(local_ip), dev_type_(RobotType::ROBOT_XCORE)
+{
+    // Constructor implementation
+}
+
+RobotStudio::RobotStudio(int cont_no, std::string hostname, int robot_no)
+    : cont_no_(cont_no), hostname_(hostname), robot_no_(robot_no), dev_type_(RobotType::ROBOT_KRNX)
 {
     // Constructor implementation
 }
@@ -16,8 +22,22 @@ RobotStudio::~RobotStudio()
 
 bool RobotStudio::connect()
 {
+    int fd = -1;
     RobotController &controller = RobotController::instance();
-    int fd = controller.connect(RobotType::ROBOT_XCORE, hostname_, local_ip_);
+
+    switch (dev_type_)
+    {
+        case RobotType::ROBOT_XCORE:
+            fd = controller.connect(hostname_, local_ip_);
+            break;
+        case RobotType::ROBOT_KRNX:
+            fd = controller.connect(cont_no_, hostname_, robot_no_);
+            break;
+        default:
+            LOG_ERROR("Invalid robot type");
+            return false;
+    }
+
     if (fd < 0)
     {
         LOG_ERROR("Failed to connect to robot studio");

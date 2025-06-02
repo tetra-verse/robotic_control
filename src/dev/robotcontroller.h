@@ -8,18 +8,15 @@
 
 #include "dev/robotinterface.h"
 
-enum class RobotType
-{
-    ROBOT_XCORE,
-    ROBOT_KRNX
-};
+
 
 class RobotController
 {
 public:
     static RobotController& instance();
 
-    int connect(RobotType type, const std::string &host_name, const std::string &local_ip = "");
+    int connect(const std::string &host_name, const std::string &local_ip = "");
+    int connect(int cont_no, std::string hostname, int robot_no = 0);
     bool disconnect(int fd);
 
     int moveJoint(int fd, float delta, int index);

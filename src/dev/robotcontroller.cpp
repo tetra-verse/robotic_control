@@ -3,6 +3,7 @@
 
 #include "log/logging.h"
 #include "dev/robotxcoredev.h"
+#include "dev/robotkrnxdev.h"
 
 RobotController& RobotController::instance()
 {
@@ -23,23 +24,27 @@ RobotController::~RobotController()
     robot_devs_.clear();
 }
 
-int RobotController::connect(RobotType type, const std::string &host_name, const std::string &local_ip)
+int RobotController::connect(const std::string &host_name, const std::string &local_ip)
 {
-    RobotInterface *robot_dev = nullptr;
-
-    switch (type) {
-        case RobotType::ROBOT_XCORE:
-            robot_dev = new RobotXCoreDev(host_name, local_ip);
-            break;
-        case RobotType::ROBOT_KRNX:
-            // robot_dev = new RobotKrnxDev(host_name, local_ip);
-            break;
-        default:
-            LOG_ERROR("Invalid robot type");
-            return -1;
+    RobotInterface *robot_dev = new RobotXCoreDev(host_name, local_ip);
+    if (robot_dev == nullptr || !robot_dev->connect()) {
+        LOG_ERROR("Failed to create robot device ");
+        delete robot_dev;
+        return -1;
     }
 
-    if (!robot_dev->connect()) {
+    std::unique_lock<std::shared_mutex> lock(devs_mutex_);
+    int fd = fds_++;
+    robot_devs_[fd] = robot_dev;
+
+    return fd;
+}
+
+int RobotController::connect(int cont_no, std::string hostname, int robot_no)
+{
+    RobotInterface *robot_dev = new RobotKrnxDev(cont_no, hostname, robot_no);
+    if (robot_dev == nullptr || !robot_dev->connect()) {
+        LOG_ERROR("Failed to create robot device");
         delete robot_dev;
         return -1;
     }
