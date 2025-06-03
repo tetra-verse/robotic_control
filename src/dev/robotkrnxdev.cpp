@@ -32,6 +32,12 @@ bool RobotKrnxDev::connect()
     cont_no_ = cont_no;
     is_opened_ = true;
 
+    if (!runProgram()) {
+        disconnect();
+        LOG_ERROR("Failed to run program on controller: {}", cont_no_);
+        return false;
+    }
+
     return true;
 }
 
@@ -147,3 +153,335 @@ void RobotKrnxDev::setReadCallback(ReadCallback callback)
     LOG_INFO("Read callback set for controller: {}  robot {}", cont_no_, robot_no_);
 }
 
+bool RobotKrnxDev::motorPower(bool on)
+{
+    int err_code = 0; // Error code pointer, can be used for error handling
+    char buffer[256] = {0}; // Buffer to store the response
+    const char *monitor_cmd = on ? "ZPOW ON" : "ZPOW OFF";
+    int ret = krnx_ExecMon(cont_no_, monitor_cmd, buffer, sizeof(buffer) - 1, &err_code);
+    if (ret < 0) {
+        LOG_ERROR("Failed to set motor power: {} err coce {}", ret, err_code);
+        return false;
+    }
+
+    LOG_INFO("Motor power set successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::setSignal(int sig_no, bool on)
+{
+    int err_code = 0; // Error code pointer, can be used for error handling
+    int status = on ? -1 : 0;
+    int ret = krnx_SetSignal(cont_no_, sig_no, status, &err_code);
+    if (ret < 0) {
+        LOG_ERROR("Failed to set signal: {} err code {}", ret, err_code);
+        return false;
+    }
+
+    LOG_INFO("Signal set successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::switchMode(ControllerMode mode)
+{
+    if (!setSignal(SignalAsProgExecuting, mode == RtcController)) {
+        LOG_ERROR("Failed to switch controller mode: rtc");
+        return false;
+    }
+
+    LOG_INFO("Controller mode switched successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::loadProgram(const std::string &prog_name, const std::string &program, const std::string &suffix)
+{
+    std::string full_program_name = prog_name + suffix;
+    int ret = krnx_Load(cont_no_, full_program_name.data());
+    if (ret < 0) {
+        LOG_ERROR("Failed to load program: {}", ret);
+        return false;
+    }
+
+    LOG_INFO("Program loaded successfully for controller: {} program {}", cont_no_, full_program_name);
+    return true;
+}
+
+bool RobotKrnxDev::executeOnce(std::string_view program_name)
+{
+    return krnxExecute(program_name, 1, 0);
+}
+
+bool RobotKrnxDev::krnxExecute(std::string_view program_name, int exec_num, int step_num)
+{
+    int err_code = 0; // Error code pointer, can be used for error handling
+    int ret = krnx_Execute(cont_no_, robot_no_, program_name.data(), exec_num, step_num, &err_code);
+    if (ret < 0) {
+        LOG_ERROR("Failed to execute program: {} err code {}", ret, err_code);
+        return false;
+    }
+
+    LOG_INFO("Program executed successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::activateRtcMode()
+{
+    TKrnxRtcInfo rtc_info = {8, 4, 1}; // Example RTC info
+    if (!setRtcInfo(rtc_info)) {
+        LOG_ERROR("Failed to set RTC info: {}", cont_no_);
+        return false;
+    }
+
+    std::stringstream ss;
+    ss << ".PROGRAM gka_rb_rtc()\n"
+        << "  HERE #rtchome1\n"
+        << "  ACCURACY 0 ALWAYS\n"
+        << "  RTC_SW 1: ON\n"
+        << "  1\n"
+        << "  JMOVE #rtchome1\n"
+        << "  GOTO 1\n"
+        << "  RTC_SW 1: OFF\n"
+        << ".END\n";
+
+    std::string program = ss.str();
+    if (!loadProgram("gka_rb_rtc", program, ".as")) {
+        LOG_ERROR("Failed to load program for RTC mode: {}", cont_no_);
+        return false;
+    }
+
+    // Reset any errors before executing the program
+    if (krnxErrorReset()) { 
+        LOG_INFO("Error reset successfully for controller: {}", cont_no_);
+    } 
+
+    if (!setMonitorSpeed(10)) {
+        LOG_ERROR("Failed to set monitor speed for RTC mode: {}", cont_no_);
+    }
+
+    if (!krnxOldCompClear()) {
+        LOG_ERROR("Failed to clear old comp for RTC mode: {}", cont_no_);
+    }
+
+    if (!executeOnce("gka_rb_rtc")) {
+        LOG_ERROR("Failed to execute program for RTC mode: {}", cont_no_);
+        return false;
+    }
+
+    switchMode(RtcController); // Switch to RTC controller mode
+
+    LOG_INFO("RTC mode activated successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::setRtcInfo(TKrnxRtcInfo rtc_info)
+{
+    int ret = krnx_SetRtcInfo(cont_no_, &rtc_info);
+    if (ret < 0) {
+        LOG_ERROR("Failed to set RTC info: {}", ret);
+        return false;
+    }
+
+    LOG_INFO("RTC info set successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::krnxErrorReset()
+{
+    int err_code = 0;
+    int ret = krnx_Ereset(cont_no_, robot_no_, &err_code);
+    if (ret < 0) {
+        LOG_ERROR("Failed to reset error: {} error code {}", ret, err_code);
+        return false;
+    }
+
+    LOG_INFO("Error reset successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::setMonitorSpeed(float speed)
+{
+    int err_code = 0;
+    int ret = krnx_SetMonSpeed(cont_no_, robot_no_, speed, &err_code);
+    if (ret < 0) {
+        LOG_ERROR("Failed to set monitor speed: {} error code {}", ret, err_code);
+        return false;
+    }
+
+    LOG_INFO("Monitor speed set successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::krnxOldCompClear()
+{
+    int ret = krnx_OldCompClear(cont_no_, robot_no_);
+    if (ret < 0) {
+        LOG_ERROR("Failed to clear old comp: {}", ret);
+        return false;
+    }
+
+    LOG_INFO("Old comp cleared successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::krnxHold()
+{
+    int err_code = 0;
+    int ret = krnx_Hold(cont_no_, robot_no_, &err_code);
+    if (ret < 0) {
+        LOG_ERROR("Failed to hold: {} error code {}", ret, err_code);
+        return false;
+    }
+
+    LOG_INFO("Hold successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::krnxKill()
+{
+    int err_code = 0;
+    int ret = krnx_Kill(cont_no_, robot_no_, &err_code);
+    if (ret < 0) {
+        LOG_ERROR("Failed to kill: {} error code {}", ret, err_code);
+        return false;
+    }
+
+    LOG_INFO("Kill successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::deactivateRtcMode()
+{
+    if (!krnxHold()) {
+        LOG_ERROR("Failed to hold for RTC mode: {}", cont_no_);
+        return false;
+    }
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    if (!krnxKill()) {
+        LOG_ERROR("Failed to kill for RTC mode: {}", cont_no_);
+        return false;
+    }
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // Reset any errors before executing the program
+    if (krnxErrorReset()) { 
+        LOG_INFO("Error reset successfully for controller: {}", cont_no_);
+    }
+
+    LOG_INFO("RTC mode deactivated successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::runProgram()
+{
+    bool ret = motorPower(); // Example: turn on motor power
+    if (!ret) {
+        LOG_ERROR("Failed to turn on motor power for controller: {}", cont_no_);
+        return false;
+    }
+
+    ret = switchMode();
+    if (!ret) {
+        LOG_ERROR("Failed to switch mode for controller: {}", cont_no_);
+        return false;
+    }
+
+    ret = setSignal(SignalAsProgExecuting, true); // Example: set signal 1 to true
+    if (!ret) {
+        LOG_ERROR("Failed to set signal for program execution for controller: {}", cont_no_);
+        return false;
+    }
+
+    ret = activateRtcMode(); // Example: activate RTC mode
+    if (!ret) {
+        LOG_ERROR("Failed to activate RTC mode for controller: {}", cont_no_);
+        return false;
+    }
+
+
+
+    int rct_sw = 0;
+    int  try_read = 0;
+    for (try_read = 0; try_read < 10; ++try_read) {
+        if (getRtcSwitch(&rct_sw)) {
+            if (rct_sw == 1) {
+                LOG_INFO("RTC switch is ON for controller: {}", cont_no_);
+                break;
+            }
+        } 
+        std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Wait before retrying
+    }
+
+    readDevCallback(); // Start reading data in a separate thread
+
+    return true;
+}
+
+bool RobotKrnxDev::getCurMotionDataEx(TKrnxCurMotionDataEx &motion_data)
+{
+    int ret = krnx_GetCurMotionDataEx(cont_no_, robot_no_, &motion_data);
+    if (ret < 0) {
+        LOG_ERROR("Failed to get RTC current motion data: {} {}", ret, robot_no_);
+        return false;
+    }
+
+    return true;
+}
+
+void RobotKrnxDev::readRobotData()
+{
+    if (read_callback_ == nullptr) {
+        LOG_ERROR("Read callback is not set for controller: {}", cont_no_);
+        return ;
+    }
+
+    TKrnxCurMotionDataEx motion_data_ex;
+    if (!getCurMotionDataEx(motion_data_ex)) {
+        LOG_ERROR("Failed to get current motion data: {}", cont_no_);
+        return;
+    }
+
+    MotionData motion_data;
+    if (parseRtcMotionDataEx(motion_data_ex, motion_data)) {
+        read_callback_(motion_data);
+    }
+}
+
+void RobotKrnxDev::readDevCallback()
+{
+    std::thread([this]() {
+        while (is_opened_) {
+            readRobotData();
+            std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Sleep for a short duration
+        }
+    }).detach(); // Detach the thread to run independently
+}
+
+bool RobotKrnxDev::parseRtcMotionDataEx(const TKrnxCurMotionDataEx &motion_data_ex, MotionData &motion_data)
+{
+    // Parse the RTC motion data from TKrnxCurMotionDataEx to RtcMotionData
+    for (int i = 0; i < 6; ++i) {
+        motion_data.angles[i] = motion_data_ex.ang[i];
+        motion_data.xyzoat[i] = motion_data_ex.xyzoat[i];
+        motion_data.xyzptr[i] = motion_data_ex.xyzoat[i]; // Assuming xyzptr is same as xyzoat
+    }
+
+    // Additional parsing logic can be added here if needed
+
+    LOG_INFO("Parsed RTC motion data successfully for controller: {}", cont_no_);
+    return true;
+}
+
+bool RobotKrnxDev::getRtcSwitch(int *rct_sw)
+{
+    int ret = krnx_GetRtcSwitch(cont_no_, robot_no_, rct_sw);
+    if (ret < 0) {
+        LOG_ERROR("Failed to get RTC switch: {}", ret);
+        return false;
+    }
+
+    LOG_INFO("RTC switch retrieved successfully for controller: {}", cont_no_);
+    return true;
+}
