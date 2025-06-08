@@ -40,6 +40,7 @@ public:
 
     // degrees
     int moveJoint(float delta, int index);
+    int moveJoint(float *delta, int size);
 
     void setReadCallback(ReadCallback callback);
 

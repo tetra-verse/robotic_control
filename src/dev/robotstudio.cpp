@@ -156,11 +156,23 @@ int RobotStudio::moveDownward(float delta)
 
 int RobotStudio::moveJoint(float delta, int index)
 {
-    if (isConnected())
-    {
+    if (isConnected()) {
         RobotController &controller = RobotController::instance();
         int ret = controller.moveJoint(fd_, delta, index);
         LOG_INFO("Moved joint {} by {} degrees ret {}", index, delta, ret);
+        return ret;
+    }
+
+    LOG_ERROR("Not connected to robot studio");
+    return -1;
+}
+
+int RobotStudio::moveJoint(float *delta, int size)
+{
+    if (isConnected()) {
+        RobotController &controller = RobotController::instance();
+        int ret = controller.moveJoint(fd_, delta, size);
+        LOG_INFO("Moved joint {} degrees ret {}", size, ret);
         return ret;
     }
 

@@ -16,7 +16,7 @@ using ReadCallback = std::function<void(const MotionData &)>;
 class RobotInterface
 {
 public:
-    ~RobotInterface() = default;
+    virtual ~RobotInterface() {};
     
     virtual bool connect() = 0;
     virtual bool disconnect() = 0;
@@ -36,6 +36,7 @@ public:
     virtual int moveRollCounterClockwise(float delta) = 0;
 
     virtual int moveJoint(float delta, int index) = 0;
+    virtual int moveJoint(float *delta, int size) = 0;
 
     virtual void setReadCallback(ReadCallback callback) = 0;
 };

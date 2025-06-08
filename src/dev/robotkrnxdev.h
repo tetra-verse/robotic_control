@@ -27,7 +27,7 @@ class RobotKrnxDev : public RobotInterface
 {
 public:
     RobotKrnxDev(int cont_no, std::string hostname, int robot_no = 0);
-    ~RobotKrnxDev();
+    ~RobotKrnxDev() override;
 
     bool connect() override;
     bool disconnect() override;
@@ -47,6 +47,7 @@ public:
     int moveRollCounterClockwise(float delta) override;
 
     int moveJoint(float delta, int index) override;
+    int moveJoint(float *delta, int size) override;
 
     void setReadCallback(ReadCallback callback) override;
 
@@ -57,6 +58,9 @@ private:
     bool activateRtcMode();
     bool deactivateRtcMode();
     bool runProgram();
+
+    bool setRtcCompData(const float *comp6, int *status6);
+    bool getRtcCompData(float *comp6);
 
     bool loadProgram(const std::string &prog_name, const std::string &program, const std::string &suffix);
     bool executeOnce(std::string_view program_name);
@@ -83,6 +87,7 @@ private:
     std::string hostname_ = ""; // Hostname
     bool is_opened_ = false; // Opened status
     ReadCallback read_callback_ = nullptr; // Read callback function
+    unsigned short seq_no_ = 0; // Sequence number for RTC comp data
 };
 
 #endif // DEV_ROBOTKRNXDEV_H_

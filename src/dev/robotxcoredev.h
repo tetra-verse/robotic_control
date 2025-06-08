@@ -8,7 +8,7 @@ class RobotXCoreDev : public RobotInterface
 {
 public:
     RobotXCoreDev(const std::string &remote_ip, const std::string& local_ip = "");
-    ~RobotXCoreDev();
+    ~RobotXCoreDev() override;
 
     bool connect() override;
     bool disconnect() override;
@@ -28,6 +28,7 @@ public:
     int moveRollCounterClockwise(float delta) override;
 
     int moveJoint(float delta, int index) override;
+    int moveJoint(float *delta, int size) override;
 
     void setReadCallback(ReadCallback callback) override;
 

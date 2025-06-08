@@ -142,9 +142,67 @@ int RobotKrnxDev::moveJoint(float delta, int index)
         return -1; // Return error status
     }
 
-    // Implement the logic to move the specified joint by delta
-    LOG_INFO("Moving joint {} by {}", index, delta);
+    float comp_max[18] = {0};
+    int status_max[18] = {0};
+    if (getRtcCompData(comp_max) == false) {
+        LOG_ERROR("Failed to get RTC comp data for controller: {}", cont_no_);
+        return -1; // Return error status
+    }
+
+    comp_max[index] += delta; // Set the delta for the specified joint
+    if (!setRtcCompData(comp_max, status_max)) {
+        LOG_ERROR("Failed to set RTC comp data for controller: {}", cont_no_);
+        return -1; // Return error status
+    }
+
     return 0; // Return success status
+}
+
+int RobotKrnxDev::moveJoint(float *delta, int size)
+{
+    float comp_max[18] = {0};
+    int status_max[18] = {0};
+
+    if (getRtcCompData(comp_max) == false) {
+        LOG_ERROR("Failed to get RTC comp data for controller: {}", cont_no_);
+        return -1; // Return error status
+    }
+
+    for (int i = 0; i < sizeof(comp_max) && i < size; i++) {
+        comp_max[i] += delta[i];
+    }
+    
+    if (!setRtcCompData(comp_max, status_max)) {
+        LOG_ERROR("Failed to set RTC comp data for controller: {}", cont_no_);
+        return -1; // Return error status
+    }
+
+    return 0; // Return success status
+}
+
+bool RobotKrnxDev::setRtcCompData(const float *comp6, int *status6)
+{
+    int ret = krnx_SetRtcCompData(cont_no_, robot_no_, comp6, status6, seq_no_);
+    if (ret < 0) {
+        LOG_ERROR("Failed to set RTC comp data: {} seq no {}", ret, seq_no_);
+        return false;
+    }
+
+    LOG_INFO("RTC comp data set successfully for controller: {} seq no {}", cont_no_, seq_no_);
+    seq_no_++;
+    return true;
+}
+
+bool RobotKrnxDev::getRtcCompData(float *comp6)
+{
+    int ret = krnx_GetRtcCompData(cont_no_, robot_no_, comp6);
+    if (ret < 0) {
+        LOG_ERROR("Failed to get RTC comp data: {}", ret);
+        return false;
+    }
+
+    LOG_INFO("RTC comp data retrieved successfully for controller: {}", cont_no_);
+    return true;
 }
 
 void RobotKrnxDev::setReadCallback(ReadCallback callback)
@@ -433,7 +491,7 @@ bool RobotKrnxDev::getCurMotionDataEx(TKrnxCurMotionDataEx &motion_data)
 void RobotKrnxDev::readRobotData()
 {
     if (read_callback_ == nullptr) {
-        LOG_ERROR("Read callback is not set for controller: {}", cont_no_);
+        LOG_WARN("Read callback is not set for controller: {}", cont_no_);
         return ;
     }
 

@@ -20,6 +20,7 @@ public:
     bool disconnect(int fd);
 
     int moveJoint(int fd, float delta, int index);
+    int moveJoint(int fd, float *delta, int size);
 
     int moveForward(int fd, float delta);
     int moveBackward(int fd, float delta);

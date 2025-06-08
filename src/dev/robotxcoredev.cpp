@@ -224,6 +224,12 @@ int RobotXCoreDev::moveJoint(float delta, int index)
     return 0;
 }
 
+int RobotXCoreDev::moveJoint(float *delta, int size)
+{
+    return 0;
+}
+
+
 int RobotXCoreDev::moveUp(float delta)
 {
     return moveDegree(delta, 0);
