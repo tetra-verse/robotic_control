@@ -180,6 +180,20 @@ int RobotStudio::moveJoint(float *delta, int size)
     return -1;
 }
 
+int RobotStudio::moveSpeed(float *delta, int size)
+{
+    if (isConnected())
+    {
+        RobotController &controller = RobotController::instance();
+        int ret = controller.moveSpeed(fd_, delta, size);
+        LOG_INFO("Moved speed by {} degrees ret {}", size, ret);
+        return ret;
+    }
+
+    LOG_ERROR("Not connected to robot studio");
+    return -1;
+}
+
 int RobotStudio::moveUp(float delta)
 {
     if (isConnected())

@@ -42,6 +42,8 @@ public:
     int moveJoint(float delta, int index);
     int moveJoint(float *delta, int size);
 
+    int moveSpeed(float *delta, int size);
+
     void setReadCallback(ReadCallback callback);
 
 private:

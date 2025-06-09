@@ -37,6 +37,7 @@ public:
 
     virtual int moveJoint(float delta, int index) = 0;
     virtual int moveJoint(float *delta, int size) = 0;
+    virtual int moveSpeed(float *delta, int size) = 0;
 
     virtual void setReadCallback(ReadCallback callback) = 0;
 };

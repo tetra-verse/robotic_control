@@ -180,6 +180,20 @@ int RobotKrnxDev::moveJoint(float *delta, int size)
     return 0; // Return success status
 }
 
+int RobotKrnxDev::moveSpeed(float *delta, int size)
+{
+    int index = 0;
+    for (; index < size && index < 6; ++index) {
+        delta_angle_[index] = delta[index];
+    }
+
+    for (; index < 6; ++index) {
+        delta_angle_[index] = 0.0; // Fill remaining angles with zero
+    }
+
+    return 0;
+}
+
 bool RobotKrnxDev::setRtcCompData(const float *comp6, int *status6)
 {
     int ret = krnx_SetRtcCompData(cont_no_, robot_no_, comp6, status6, seq_no_);
@@ -472,7 +486,7 @@ bool RobotKrnxDev::runProgram()
         std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Wait before retrying
     }
 
-    readDevCallback(); // Start reading data in a separate thread
+    devCallback(); // Start reading data in a separate thread
 
     return true;
 }
@@ -507,12 +521,19 @@ void RobotKrnxDev::readRobotData()
     }
 }
 
-void RobotKrnxDev::readDevCallback()
+void RobotKrnxDev::devCallback()
 {
     std::thread([this]() {
         while (is_opened_) {
             readRobotData();
             std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Sleep for a short duration
+        }
+    }).detach(); // Detach the thread to run independently
+
+    std::thread([this]() {
+        while (is_opened_) {
+            moveJoint(delta_angle_.data(), delta_angle_.size());
+            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Sleep for a short duration
         }
     }).detach(); // Detach the thread to run independently
 }

@@ -94,6 +94,13 @@ void RobotXCoreDev::setRobotReceiveState()
         if (read_callback_ && readRobotData(data)) {
             read_callback_(data);
         }
+
+        std::array<double,6> jntPos{};
+        robot_dev_->getStateData(RtSupportedFields::jointPos_m, jntPos);
+        for(unsigned i = 0; i < cmd.joints.size() && i < sizeof(delta_angle_) / sizeof(float); ++i) {
+            cmd.joints[i] = jntPos[i] + delta_angle_[i];
+        }
+
         return cmd;
     };
 
@@ -226,6 +233,20 @@ int RobotXCoreDev::moveJoint(float delta, int index)
 
 int RobotXCoreDev::moveJoint(float *delta, int size)
 {
+    return 0;
+}
+
+int RobotXCoreDev::moveSpeed(float *delta, int size)
+{
+    int index = 0;
+    for (; index < size && index < 6; ++index) {
+        delta_angle_[index] = delta[index];
+    }
+
+    for (; index < 6; ++index) {
+        delta_angle_[index] = 0.0; // Fill remaining angles with zero
+    }
+
     return 0;
 }
 

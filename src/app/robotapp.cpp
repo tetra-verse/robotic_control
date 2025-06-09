@@ -29,12 +29,13 @@ void RobotApp::init()
 
     int j = 0;
     float comp_max[6] = {0.01, 0.02, 0.03, 0.04, 0.03, 0.02};
-    for (int i = 0; i < 200; ++i) {
+    krnx_dev.moveSpeed(comp_max, sizeof(comp_max) / sizeof(comp_max[0]));
+    for (int i = 0; i < 2000; ++i) {
         if (i % 100 == 0) {
             j++;
         }
         // krnx_dev.moveJoint(0.001, 1); // Move each joint by 0.01 degrees
-        krnx_dev.moveJoint(comp_max, sizeof(comp_max));
+        // krnx_dev.moveJoint(comp_max, sizeof(comp_max));
         std::this_thread::sleep_for(std::chrono::milliseconds(50)); // Sleep for 100 milliseconds
     }
 

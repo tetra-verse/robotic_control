@@ -49,6 +49,8 @@ public:
     int moveJoint(float delta, int index) override;
     int moveJoint(float *delta, int size) override;
 
+    int moveSpeed(float *delta, int size) override;
+
     void setReadCallback(ReadCallback callback) override;
 
 private:
@@ -78,7 +80,7 @@ private:
     bool getCurMotionDataEx(TKrnxCurMotionDataEx &motion_data);
 
     void readRobotData();
-    void readDevCallback();
+    void devCallback();
     bool parseRtcMotionDataEx(const TKrnxCurMotionDataEx &motion_data_ex, MotionData &motion_data);
 
 private:
@@ -88,6 +90,7 @@ private:
     bool is_opened_ = false; // Opened status
     ReadCallback read_callback_ = nullptr; // Read callback function
     unsigned short seq_no_ = 0; // Sequence number for RTC comp data
+    std::array<float, 6> delta_angle_ = {0}; // Joint angles
 };
 
 #endif // DEV_ROBOTKRNXDEV_H_

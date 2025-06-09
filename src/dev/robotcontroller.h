@@ -22,6 +22,8 @@ public:
     int moveJoint(int fd, float delta, int index);
     int moveJoint(int fd, float *delta, int size);
 
+    int moveSpeed(int fd, float *delta, int size);
+
     int moveForward(int fd, float delta);
     int moveBackward(int fd, float delta);
     int moveLeftward(int fd, float delta);

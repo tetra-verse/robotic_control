@@ -30,6 +30,8 @@ public:
     int moveJoint(float delta, int index) override;
     int moveJoint(float *delta, int size) override;
 
+    int moveSpeed(float *delta, int size) override;
+
     void setReadCallback(ReadCallback callback) override;
 
 private:
@@ -47,6 +49,7 @@ private:
     std::string remote_ip_;
     std::string local_ip_;
     double speed_ = 0.5; // Default speed
+    std::array<float, 6> delta_angle_ = {0}; // Joint angles
 
 };
 

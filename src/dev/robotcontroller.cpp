@@ -226,6 +226,24 @@ int RobotController::moveJoint(int fd, float *delta, int size)
     return ret;
 }
 
+int RobotController::moveSpeed(int fd, float *delta, int size)
+{
+    std::shared_lock<std::shared_mutex> lock(devs_mutex_);
+    auto robot_dev = findRobotDev(fd);
+    if (robot_dev == nullptr) {
+        LOG_ERROR("Failed to move speed: invalid file descriptor {}", fd);
+        return -1;
+    }
+
+    int ret = robot_dev->moveSpeed(delta, size);
+    if (ret != 0) {
+        LOG_ERROR("Failed to move speed: {}", ret);
+        return -1;
+    }
+
+    return ret;
+}
+
 int RobotController::moveUp(int fd, float delta)
 {
     std::shared_lock<std::shared_mutex> lock(devs_mutex_);
