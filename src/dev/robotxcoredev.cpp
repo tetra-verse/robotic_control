@@ -67,7 +67,7 @@ void RobotXCoreDev::setRobotMode()
 
     try {
         error_code ec;
-        robot_dev_->setOperateMode(rokae::OperateMode::automatic,ec);
+        robot_dev_->setOperateMode(rokae::OperateMode::manual,ec);
         robot_dev_->setRtNetworkTolerance(20, ec);
 
         robot_dev_->setMotionControlMode(MotionControlMode::RtCommand, ec);
@@ -97,7 +97,7 @@ void RobotXCoreDev::setRobotReceiveState()
         return cmd;
     };
 
-    rtCon->setControlLoop(callback);
+    rtCon->setControlLoop(callback, 0, true);
     rtCon->startLoop(true);
 }
 
