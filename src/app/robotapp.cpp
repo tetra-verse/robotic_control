@@ -1,8 +1,12 @@
 #include "robotapp.h"
 
-#include "dev/robotstudio.h"
+
 #include <thread>
 #include <chrono>
+#include <iostream>
+
+#include "log/logging.h"
+#include "dev/robotstudio.h"
 
 void RobotApp::init()
 {
@@ -26,6 +30,13 @@ void RobotApp::init()
     // dev.moveRight(10);
     // dev.moveRollClockwise(10);
     // dev.moveRollCounterClockwise(10);
+
+    krnx_dev.setReadCallback([](const MotionData &data) {
+        // Process the motion data received from the robot
+        LOG_INFO("Received motion data: Angles: [0]:{} [1]:{} [2]:{} [3]:{} [4]:{} [5]:{}",
+                 data.angles[0], data.angles[1], data.angles[2],
+                 data.angles[3], data.angles[4], data.angles[5]);
+    });
 
     int j = 0;
     float comp_max[6] = {0.01, 0.02, 0.03, 0.04, 0.03, 0.02};
