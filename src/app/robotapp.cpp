@@ -30,7 +30,7 @@ void RobotApp::init()
     int j = 0;
     float comp_max[6] = {0.01, 0.02, 0.03, 0.04, 0.03, 0.02};
     krnx_dev.moveSpeed(comp_max, sizeof(comp_max) / sizeof(comp_max[0]));
-    for (int i = 0; i < 2000; ++i) {
+    for (int i = 0; i < 20; ++i) {
         if (i % 100 == 0) {
             j++;
         }

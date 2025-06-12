@@ -2,6 +2,7 @@
 #define DEV_ROBOTKRNXDEV_H_
 
 #include <string>
+#include <thread>
 #include "dev/robotinterface.h"
 #include "krnx.h"
 
@@ -91,6 +92,9 @@ private:
     ReadCallback read_callback_ = nullptr; // Read callback function
     unsigned short seq_no_ = 0; // Sequence number for RTC comp data
     std::array<float, 6> delta_angle_ = {0}; // Joint angles
+    bool running_ = false; // Running status
+    std::thread read_thread_; // Thread for reading data
+    std::thread write_thread_; // Thread for writing data
 };
 
 #endif // DEV_ROBOTKRNXDEV_H_

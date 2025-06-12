@@ -31,6 +31,7 @@ bool RobotKrnxDev::connect()
 
     cont_no_ = cont_no;
     is_opened_ = true;
+    running_ = true;
 
     if (!runProgram()) {
         disconnect();
@@ -47,6 +48,20 @@ bool RobotKrnxDev::disconnect()
         LOG_ERROR("Controller {} is not open", cont_no_);
         return true;
     }
+
+    running_ = false; // Stop the running threads
+    if (read_thread_.joinable()) {
+        read_thread_.join(); // Wait for the read thread to finish
+    }
+
+    if (write_thread_.joinable()) {
+        write_thread_.join(); // Wait for the write thread to finish
+    }
+
+    read_callback_ = nullptr; // Clear the read callback
+
+    motorPower(false); // Turn off motor power before closing
+    switchMode(AsExecutor); // Switch back to AsExecutor mode
 
     int ret = krnx_Close(cont_no_);
     if (ret < 0) {
@@ -523,19 +538,19 @@ void RobotKrnxDev::readRobotData()
 
 void RobotKrnxDev::devCallback()
 {
-    std::thread([this]() {
-        while (is_opened_) {
+    read_thread_ = std::thread([this]() {
+        while (running_) {
             readRobotData();
-            std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Sleep for a short duration
+            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Sleep for a short duration
         }
-    }).detach(); // Detach the thread to run independently
+    }); // Detach the thread to run independently
 
-    std::thread([this]() {
-        while (is_opened_) {
+    write_thread_ = std::thread([this]() {
+        while (running_) {
             moveJoint(delta_angle_.data(), delta_angle_.size());
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Sleep for a short duration
         }
-    }).detach(); // Detach the thread to run independently
+    }); // Detach the thread to run independently
 }
 
 bool RobotKrnxDev::parseRtcMotionDataEx(const TKrnxCurMotionDataEx &motion_data_ex, MotionData &motion_data)
