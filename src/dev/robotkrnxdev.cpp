@@ -39,7 +39,7 @@ bool RobotKrnxDev::connect()
         return false;
     }
 
-    getRtcCompLimits(comp6_limits_.data(), comp6_limits_.size()); // Get RTC comp limits
+    getSoftLimit(comp6_limits_.data(), comp6_limits_.size()); // Get RTC comp limits
     LOG_INFO("limits [0]{} [1]{} [2]{} [3]{} [4]{} [5]{}", 
              comp6_limits_[0], comp6_limits_[1], comp6_limits_[2], 
              comp6_limits_[3], comp6_limits_[4], comp6_limits_[5]);
@@ -192,7 +192,7 @@ int RobotKrnxDev::moveJoint(float *delta, int size)
         comp_max[i] += delta[i];
     }
 
-    int ret = krnxLimit(comp_max, size); // Limit the values
+    int ret = outOfRangeCheck(comp_max, size); // Limit the values
     if (ret < 0) {
         LOG_ERROR("Joint limits exceeded for controller: {}", cont_no_);
         return -1; // Return error status
@@ -535,7 +535,7 @@ bool RobotKrnxDev::getCurMotionDataEx(TKrnxCurMotionDataEx &motion_data)
     return true;
 }
 
-bool RobotKrnxDev::getRtcCompLimits(float *comp6, int size)
+bool RobotKrnxDev::getSoftLimit(float *comp6, int size)
 {
     float comp_limits[18] = {0};
     int ret = krnx_GetRtcCompLimit(cont_no_, robot_no_, comp_limits);
@@ -553,7 +553,7 @@ bool RobotKrnxDev::getRtcCompLimits(float *comp6, int size)
     return true;
 }
 
-int RobotKrnxDev::krnxLimit(float *limit, int size)
+int RobotKrnxDev::outOfRangeCheck(float *limit, int size)
 {
     float lim_m[18] = {0}; // Array to hold limits
     float lim_p[18] = {0}; // Array to hold limits

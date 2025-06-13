@@ -79,9 +79,9 @@ private:
     bool getRtcSwitch(int *rct_sw);
 
     bool getCurMotionDataEx(TKrnxCurMotionDataEx &motion_data);
-    bool getRtcCompLimits(float *comp6, int size);
+    bool getSoftLimit(float *comp6, int size);
 
-    int krnxLimit(float *limit, int size);
+    int outOfRangeCheck(float *limit, int size);
 
 
     void readRobotData();
