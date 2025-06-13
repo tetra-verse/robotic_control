@@ -79,6 +79,10 @@ private:
     bool getRtcSwitch(int *rct_sw);
 
     bool getCurMotionDataEx(TKrnxCurMotionDataEx &motion_data);
+    bool getRtcCompLimits(float *comp6, int size);
+
+    int krnxLimit(float *limit, int size);
+
 
     void readRobotData();
     void devCallback();
@@ -95,6 +99,7 @@ private:
     bool running_ = false; // Running status
     std::thread read_thread_; // Thread for reading data
     std::thread write_thread_; // Thread for writing data
+    std::array<float, 18> comp6_limits_ = {0}; // Compensated angles
 };
 
 #endif // DEV_ROBOTKRNXDEV_H_

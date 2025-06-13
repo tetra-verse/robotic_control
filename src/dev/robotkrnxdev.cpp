@@ -39,6 +39,11 @@ bool RobotKrnxDev::connect()
         return false;
     }
 
+    getRtcCompLimits(comp6_limits_.data(), comp6_limits_.size()); // Get RTC comp limits
+    LOG_INFO("limits [0]{} [1]{} [2]{} [3]{} [4]{} [5]{}", 
+             comp6_limits_[0], comp6_limits_[1], comp6_limits_[2], 
+             comp6_limits_[3], comp6_limits_[4], comp6_limits_[5]);
+
     return true;
 }
 
@@ -186,6 +191,12 @@ int RobotKrnxDev::moveJoint(float *delta, int size)
     for (int i = 0; i < sizeof(comp_max) && i < size; i++) {
         comp_max[i] += delta[i];
     }
+
+    int ret = krnxLimit(comp_max, size); // Limit the values
+    if (ret < 0) {
+        LOG_ERROR("Joint limits exceeded for controller: {}", cont_no_);
+        return -1; // Return error status
+    }
     
     if (!setRtcCompData(comp_max, status_max)) {
         LOG_ERROR("Failed to set RTC comp data for controller: {}", cont_no_);
@@ -197,6 +208,13 @@ int RobotKrnxDev::moveJoint(float *delta, int size)
 
 int RobotKrnxDev::moveSpeed(float *delta, int size)
 {
+    for (int i = 0; i < size && i < comp6_limits_.size(); ++i) {
+        if (delta[i] > comp6_limits_[i]) {
+            LOG_ERROR("Speed delta exceeds limit for joint {}: {} > {}", i, delta[i], comp6_limits_[i]);
+            return -1; // Return error status
+        }
+    }
+
     int index = 0;
     for (; index < size && index < 6; ++index) {
         delta_angle_[index] = delta[index];
@@ -515,6 +533,59 @@ bool RobotKrnxDev::getCurMotionDataEx(TKrnxCurMotionDataEx &motion_data)
     }
 
     return true;
+}
+
+bool RobotKrnxDev::getRtcCompLimits(float *comp6, int size)
+{
+    float comp_limits[18] = {0};
+    int ret = krnx_GetRtcCompLimit(cont_no_, robot_no_, comp_limits);
+    if (ret < 0) {
+        LOG_ERROR("Failed to get RTC comp limits: {}", ret);
+        return false;
+    }
+
+    for (size_t i = 0; i < size && i < sizeof(comp_limits) / sizeof(float); i++)
+    {
+        comp6[i] = comp_limits[i];
+    }
+    
+    LOG_INFO("RTC comp limits retrieved successfully for controller: {}", cont_no_);
+    return true;
+}
+
+int RobotKrnxDev::krnxLimit(float *limit, int size)
+{
+    float lim_m[18] = {0}; // Array to hold limits
+    float lim_p[18] = {0}; // Array to hold limits
+    int ret = krnx_GetLimitM(cont_no_, robot_no_, lim_m);
+    if (ret < 0) {
+        LOG_ERROR("Failed to get robot limits: {}", ret);
+        return -1; // Return error status
+    }
+
+    ret = krnx_GetLimitP(cont_no_, robot_no_, lim_p);
+    if (ret < 0) {
+        LOG_ERROR("Failed to get robot limits: {}", ret);
+        return -1; // Return error status
+    }
+
+    LOG_WARN("limit min: [0]{} [1]{} [2]{} [3]{} [4]{} [5]{}", lim_m[0], lim_m[1], lim_m[2], lim_m[3], lim_m[4], lim_m[5]);
+    LOG_WARN("limit max: [0]{} [1]{} [2]{} [3]{} [4]{} [5]{}", lim_p[0], lim_p[1], lim_p[2], lim_p[3], lim_p[4], lim_p[5]);
+
+    for (int i = 0; i < size && i < 18; ++i) {
+        if (limit[i] < lim_m[i]) {
+            LOG_ERROR("Limit out of range for joint {}: {} not in [{}, {}]", i, limit[i], lim_m[i], lim_p[i]);
+            return -1; // Return error status
+        }
+        if (limit[i] > lim_p[i]) {
+            LOG_ERROR("Limit out of range for joint {}: {} not in [{}, {}]", i, limit[i], lim_m[i], lim_p[i]);
+            return -1;
+        }
+    }
+
+    LOG_WARN("limit val: [0]{} [1]{} [2]{} [3]{} [4]{} [5]{}", limit[0], limit[1], limit[2], limit[3], limit[4], limit[5]);
+
+    return 0; // Return success status
 }
 
 void RobotKrnxDev::readRobotData()
